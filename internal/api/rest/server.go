@@ -288,3 +288,123 @@ func (s *Server) getSystemStateHandler(w http.ResponseWriter, r *http.Request) {
 			ImpedanceOhms:  state.ImpedanceOhms,
 			AspirationBar:  state.AspirationBar,
 			IrrigationMl:   state.IrrigationMl,
+		},
+		ActiveProtocol: protocolName,
+		CurrentUser:    user,
+		Timestamp:      time.Now(),
+	})
+}
+
+func (s *Server) startOperationHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		PatientID     string `json:"patient_id"`
+		ProcedureType string `json:"procedure_type"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+		return
+	}
+	
+	operationID := telemetry.GenerateOperationID()
+	
+	// Сохраняем в контекст для логирования
+	ctx := telemetry.WithOperationID(r.Context(), operationID)
+	
+	s.logger.WithContext(ctx).Info("Начало операции",
+		"patient_id", req.PatientID,
+		"procedure_type", req.ProcedureType)
+	
+	writeJSON(w, http.StatusCreated, map[string]string{
+		"operation_id": operationID,
+		"status":       "started",
+	})
+}
+
+func (s *Server) stopOperationHandler(w http.ResponseWriter, r *http.Request) {
+	operationID := telemetry.GetOperationID(r.Context())
+	
+	s.logger.WithContext(r.Context()).Info("Окончание операции",
+		"operation_id", operationID)
+	
+	writeJSON(w, http.StatusOK, map[string]string{
+		"status": "stopped",
+	})
+}
+
+func (s *Server) getOperationHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Реализовать получение истории из БД
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"operations": []interface{}{},
+	})
+}
+
+func (s *Server) getActiveAlertsHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Реализовать получение алертов
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"alerts": []interface{}{},
+	})
+}
+
+func (s *Server) acknowledgeAlertHandler(w http.ResponseWriter, r *http.Request) {
+	alertID := chi.URLParam(r, "id")
+	
+	s.logger.WithContext(r.Context()).Info("Алерт подтвержден",
+		"alert_id", alertID)
+	
+	writeJSON(w, http.StatusOK, map[string]string{
+		"status": "acknowledged",
+	})
+}
+
+func (s *Server) getSettingsHandler(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"safety_limits": domain.DefaultSafetyLimits(),
+		"ui_preferences": map[string]interface{}{
+			"theme":            "dark",
+			"language":         "ru",
+			"sound_enabled":    true,
+			"auto_save_logs":   true,
+		},
+	})
+}
+
+func (s *Server) updateSettingsHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Реализовать обновление настроек
+	writeJSON(w, http.StatusOK, map[string]string{
+		"status": "updated",
+	})
+}
+
+func (s *Server) getCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := getCurrentUserFromContext(r.Context())
+	writeJSON(w, http.StatusOK, user)
+}
+
+func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{
+		"status": "logged_out",
+	})
+}
+
+// === Helper functions ===
+
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
+}
+
+func getCurrentUserFromContext(ctx context.Context) UserResponse {
+	surgeonID := telemetry.GetSurgeonID(ctx)
+	if surgeonID == "" {
+		return UserResponse{}
+	}
+	return UserResponse{
+		ID:   surgeonID,
+		Name: "Хирург", // TODO: Загрузить из БД
+		Role: "surgeon",
+	}
+}
