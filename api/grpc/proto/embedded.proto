@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package rus_uhas.embedded.v1;
+
+option go_package = "rus-uhas/gen/proto/embedded/v1;embeddedv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// EmbeddedService - интерфейс для связи с embedded-контроллером
+// Это контракт между Control Plane (Go) и "железом" (STM32/FPGA)
+service EmbeddedService {
+  // Управление генератором
+  rpc StartGenerator(StartGeneratorRequest) returns (StartGeneratorResponse);
+  rpc StopGenerator(google.protobuf.Empty) returns (StopGeneratorResponse);
+  
+  // Управление периферией
+  rpc SetAspiration(SetAspirationRequest) returns (SetAspirationResponse);
+  rpc SetIrrigation(SetIrrigationRequest) returns (SetIrrigationResponse);
+  
+  // Получение состояния
+  rpc GetState(google.protobuf.Empty) returns (GetStateResponse);
+  rpc StreamState(google.protobuf.Empty) returns (stream GeneratorState);
+  
+  // Диагностика
+  rpc RunSelfTest(google.protobuf.Empty) returns (SelfTestResponse);
+  rpc GetDiagnostics(google.protobuf.Empty) returns (DiagnosticsResponse);
+}
+
+message StartGeneratorRequest {
+  double frequency_hz = 1;
+  double power_watts = 2;
+  string mode = 3;  // "continuous", "pulsed", "burst"
+  double pulse_frequency_hz = 4;
+}
+
+message StartGeneratorResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message StopGeneratorResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SetAspirationRequest {
+  double level = 1;  // 0.0 - 1.0
+}
+
+message SetAspirationResponse {
+  bool success = 1;
+}
+
+message SetIrrigationRequest {
+  double flow_ml_min = 1;
+}
+
+message SetIrrigationResponse {
+  bool success = 1;
+}
+
+message GeneratorState {
+  bool is_firing = 1;
+  double frequency_hz = 2;
+  double power_watts = 3;
+  double tip_temp_c = 4;
+  double impedance_ohms = 5;
+  double aspiration_bar = 6;
+  double irrigation_ml_min = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  
+  // Дополнительные диагностические данные
+  double supply_voltage = 9;
+  double cpu_temp_c = 10;
+  uint64 uptime_seconds = 11;
+}
+
+message GetStateResponse {
+  GeneratorState state = 1;
+}
+
+message SelfTestResponse {
+  bool passed = 1;
+  repeated string errors = 2;
+  repeated string warnings = 3;
+}
+
+message DiagnosticsResponse {
+  GeneratorState current_state = 1;
+  uint64 total_firing_seconds = 2;
+  uint64 total_operations = 3;
+  uint64 error_count = 4;
+  string firmware_version = 5;
+  string hardware_version = 6;
+}
