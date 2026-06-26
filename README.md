@@ -1,4 +1,4 @@
-РУС-УХАС
+## РУС-УХАС
 
 **Российский Ультразвуковой Хирургический Аспиратор с Искусственным интеллектом и Системой телеметрии**
 
@@ -457,7 +457,8 @@ export LOG_LEVEL=info
 4. Push в ветку (`git push origin feature/AmazingFeature`)
 5. Откройте Pull Request
 
-## 👥 Команда
 
-
-
+## Автор
+Квачёв Александр — Go-разработчик  
+GitHub: [AleksKAG](https://github.com/AleksKAG)  
+Telegram: [@Kurtalex27](https://t.me/Kurtalex27)
