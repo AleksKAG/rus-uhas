@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package rus_uhas.ui.v1;
+
+option go_package = "rus-uhas/gen/proto/ui/v1;uiv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// UIService - интерфейс для UI клиентов (тачскрин, мобильные)
+service UIService {
+  // Аутентификация
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(google.protobuf.Empty) returns (google.protobuf.Empty);
+  
+  // Управление протоколами
+  rpc ListProtocols(google.protobuf.Empty) returns (ListProtocolsResponse);
+  rpc SetActiveProtocol(SetActiveProtocolRequest) returns (SetActiveProtocolResponse);
+  rpc GetActiveProtocol(google.protobuf.Empty) returns (GetActiveProtocolResponse);
+  
+  // Состояние системы
+  rpc GetSystemState(google.protobuf.Empty) returns (SystemState);
+  rpc StreamSystemState(google.protobuf.Empty) returns (stream SystemState);
+  
+  // Операции
+  rpc StartOperation(StartOperationRequest) returns (StartOperationResponse);
+  rpc StopOperation(google.protobuf.Empty) returns (StopOperationResponse);
+  rpc GetOperationHistory(GetOperationHistoryRequest) returns (GetOperationHistoryResponse);
+}
+
+message LoginRequest {
+  string badge_id = 1;  // RFID badge хирурга
+  string pin = 2;       // Опциональный PIN
+}
+
+message LoginResponse {
+  string token = 1;
+  User user = 2;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string role = 3;  // "surgeon", "nurse", "admin"
+  string specialty = 4;
+}
+
+message ListProtocolsResponse {
+  repeated ProtocolInfo protocols = 1;
+}
+
+message ProtocolInfo {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string supported_tissues = 4;
+}
+
+message SetActiveProtocolRequest {
+  string protocol_id = 1;
+}
+
+message SetActiveProtocolResponse {
+  bool success = 1;
+  ProtocolInfo protocol = 2;
+}
+
+message GetActiveProtocolResponse {
+  ProtocolInfo protocol = 1;
+}
+
+message SystemState {
+  GeneratorState generator = 1;
+  ProtocolInfo active_protocol = 2;
+  User current_user = 3;
+  OperationInfo current_operation = 4;
+  repeated Alert active_alerts = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message GeneratorState {
+  bool is_firing = 1;
+  double power_watts = 2;
+  double frequency_hz = 3;
+  double tip_temp_c = 4;
+  double impedance_ohms = 5;
+  double aspiration_bar = 6;
+  double irrigation_ml_min = 7;
+  string detected_tissue = 8;
+  double tissue_confidence = 9;
+}
+
+message OperationInfo {
+  string id = 1;
+  string patient_id = 2;
+  string procedure_type = 3;
+  google.protobuf.Timestamp start_time = 4;
+  double duration_seconds = 5;
+  double estimated_blood_loss_ml = 6;
+  double tissue_removed_ml = 7;
+}
+
+message Alert {
+  string id = 1;
+  string severity = 2;  // "info", "warning", "critical"
+  string message = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  bool acknowledged = 5;
+}
+
+message StartOperationRequest {
+  string patient_id = 1;
+  string procedure_type = 2;
+}
+
+message StartOperationResponse {
+  string operation_id = 1;
+}
+
+message StopOperationResponse {
+  OperationInfo operation = 1;
+}
+
+message GetOperationHistoryRequest {
+  int32 limit = 1;
+  google.protobuf.Timestamp since = 2;
+}
+
+message GetOperationHistoryResponse {
+  repeated OperationInfo operations = 1;
+}
