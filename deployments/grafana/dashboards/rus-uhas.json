@@ -1,0 +1,150 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "rus-uhas-main",
+    "title": "РУС-УХАС - Основная панель",
+    "tags": ["rus-uhas", "surgical"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Мощность генератора (Вт)",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rus_uhas_generator_power_watts",
+            "legendFormat": "Мощность"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 50,
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 30},
+                {"color": "red", "value": 45}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Температура наконечника (°C)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "rus_uhas_generator_tip_temp_celsius",
+            "legendFormat": "Температура"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 20
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 60},
+                {"color": "red", "value": 75}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Статус генератора",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "rus_uhas_generator_is_firing",
+            "legendFormat": "Статус"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "options": {"0": {"text": "ВЫКЛ", "color": "red"}, "1": {"text": "ВКЛ", "color": "green"}}}
+            ]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Длительность цикла управления (ms)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(rus_uhas_system_control_loop_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(rus_uhas_system_control_loop_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "p50"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Ошибки по типам",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(rus_uhas_operation_errors_total[5m])",
+            "legendFormat": "{{error_type}}"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Классификация тканей (AI)",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (tissue_type) (rus_uhas_ai_classifications_total)",
+            "legendFormat": "Тип {{tissue_type}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Safety остановки",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "rus_uhas_protocol_safety_stops_total",
+            "legendFormat": "Safety stops"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 5},
+                {"color": "red", "value": 10}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}
