@@ -4,7 +4,7 @@
 
 Современная система управления ультразвуковым хирургическим деструктором-аспиратором с AI-классификацией тканей в реальном времени, полной телеметрией и адаптивными протоколами для различных типов операций.
 
-## 🚀 Возможности
+## Возможности
 
 ### Основные функции
 - **AI-классификация тканей** в реальном времени (ONNX Runtime)
@@ -25,7 +25,7 @@
 - **Structured logging** с correlation ID для аудита
 - **OpenTelemetry tracing** для диагностики
 
-## 📁 Структура проекта
+## Структура проекта
 
 ```
 rus-uhas/
@@ -70,7 +70,7 @@ rus-uhas/
 └── README.md
 ```
 
-## 🛠️ Установка
+## Установка
 
 ### Требования
 
@@ -91,7 +91,7 @@ pip install -r requirements.txt
 cd ..
 ```
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ### 1. Запуск в режиме разработки (Mock HAL)
 
@@ -138,7 +138,7 @@ go run cmd/control-plane/main.go
 open http://localhost:3000  # admin/admin
 ```
 
-## 🧪 Тестирование
+## Тестирование
 
 ```bash
 # Запустить все тесты
@@ -152,7 +152,7 @@ go test ./internal/ai -v
 go test ./internal/domain -v
 ```
 
-## 📊 API Endpoints
+## API Endpoints
 
 ### Публичные endpoints (без аутентификации)
 
@@ -192,7 +192,7 @@ go test ./internal/domain -v
 |-------|------|----------|
 | GET | `/metrics` | Prometheus метрики |
 
-## 🔧 Конфигурация
+## Конфигурация
 
 Все параметры настраиваются через переменные окружения:
 
@@ -220,7 +220,7 @@ export DEFAULT_PROTOCOL=hepatic
 export LOG_LEVEL=debug
 ```
 
-## 📈 Мониторинг
+## Мониторинг
 
 ### Prometheus метрики
 
@@ -267,7 +267,7 @@ export LOG_LEVEL=debug
 - Классификация тканей (piechart)
 - Safety остановки (stat)
 
-## 🏗️ Архитектура
+## Архитектура
 
 ### Safety Layer
 
@@ -316,7 +316,7 @@ type SafetyLimits struct {
 6. Завершение работы
 ```
 
-## 📝 Примеры использования
+## Примеры использования
 
 ### Аутентификация
 
@@ -388,7 +388,7 @@ ws.onmessage = (event) => {
 };
 ```
 
-## 🚀 Production deployment
+## Production deployment
 
 ### Сборка бинарника
 
@@ -425,13 +425,13 @@ export LOG_LEVEL=info
 ./control-plane
 ```
 
-## 📚 Документация
+## Документация
 
 - [OpenAPI спецификация](api/openapi/openapi.yaml) - полная документация REST API
 - [gRPC Proto файлы](api/grpc/proto/) - контракты для embedded и UI
 - [Architecture Decision Records](docs/architecture/) - архитектурные решения
 
-## 🔒 Безопасность
+## Безопасность
 
 ### Реализовано
 - ✅ Safety limits (нельзя обойти)
@@ -447,7 +447,7 @@ export LOG_LEVEL=info
 - ⚠️ Аудит действий пользователей
 - ⚠️ Rate limiting для API
 
-## 🤝 Вклад в проект
+## Вклад в проект
 
 Мы приветствуем вклад в проект! Пожалуйста:
 
