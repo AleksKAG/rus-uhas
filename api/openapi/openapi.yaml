@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: РУС-УХАС REST API
+  description: API для управления ультразвуковым хирургическим деструктором-аспиратором
+  version: 1.0.0
+  contact:
+    name: РУС-УХАС Team
+    email: support@rus-uhas.ru
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /api/v1/auth/login:
+    post:
+      summary: Аутентификация по RFID badge
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [badge_id]
+              properties:
+                badge_id:
+                  type: string
+                  example: BADGE001
+                pin:
+                  type: string
+                  example: "1234"
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Неверные учетные данные
+
+  /api/v1/protocols:
+    get:
+      summary: Список доступных протоколов
+      tags: [Protocols]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список протоколов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  protocols:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProtocolInfo'
+
+  /api/v1/protocols/active:
+    get:
+      summary: Получить активный протокол
+      tags: [Protocols]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Активный протокол
+    put:
+      summary: Установить активный протокол
+      tags: [Protocols]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [protocol_id]
+              properties:
+                protocol_id:
+                  type: string
+                  example: neuro
+      responses:
+        '200':
+          description: Протокол установлен
+
+  /api/v1/state:
+    get:
+      summary: Получить текущее состояние системы
+      tags: [System]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Состояние системы
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemState'
+
+  /api/v1/operations:
+    post:
+      summary: Начать операцию
+      tags: [Operations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id, procedure_type]
+              properties:
+                patient_id:
+                  type: string
+                  example: patient_123
+                procedure_type:
+                  type: string
+                  example: tumor_resection
+      responses:
+        '201':
+          description: Операция начата
+
+  /ws:
+    get:
+      summary: WebSocket подключение для real-time обновлений
+      tags: [WebSocket]
+      security:
+        - bearerAuth: []
+      responses:
+        '101':
+          description: Switching Protocols
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [surgeon, nurse, admin]
+        specialty:
+          type: string
+
+    ProtocolInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        tissues:
+          type: array
+          items:
+            type: string
+
+    SystemState:
+      type: object
+      properties:
+        generator:
+          $ref: '#/components/schemas/GeneratorState'
+        active_protocol:
+          type: string
+        current_user:
+          $ref: '#/components/schemas/User'
+        timestamp:
+          type: string
+          format: date-time
+
+    GeneratorState:
+      type: object
+      properties:
+        is_firing:
+          type: boolean
+        power_watts:
+          type: number
+        frequency_hz:
+          type: number
+        tip_temp_c:
+          type: number
+        impedance_ohms:
+          type: number
+        aspiration_bar:
+          type: number
+        irrigation_ml:
+          type: number
